@@ -1,0 +1,16 @@
+{
+  "name": "crossword-generator",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Pick any theme: AI writes the words and clues, a backtracking-style constructor builds the grid, and you solve it in the browser.",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "test": "node tests/run-node.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dguywhoknows/crossword-generator.git"
+  },
+  "homepage": "https://dguywhoknows.github.io/crossword-generator/",
+  "license": "MIT"
+}

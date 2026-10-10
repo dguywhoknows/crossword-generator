@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crossword AI</title>
+<meta name="description" content="Pick any theme: AI writes the words and clues, a backtracking constructor builds the grid, and you solve it in the browser.">
+<meta name="app-repo" content="https://github.com/dguywhoknows/crossword-generator">
+<meta name="app-version" content="2.0.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230369a1'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='13' fill='white'%3ECA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo" aria-hidden="true">CA</span><div><h1>Crossword AI</h1><p>Any theme, a fresh playable crossword.</p></div></div>
+  <nav class="topnav" data-nav aria-label="Pages"></nav>
+  <div class="top-actions"><a class="btn ghost sm" href="https://github.com/dguywhoknows/crossword-generator" target="_blank" rel="noopener">GitHub</a><span data-ai-badge></span></div>
+</header>
+<div class="page active" data-page="puzzle" data-title="Puzzle">
+<main class="stack">
+  <div class="card row no-print">
+    <input class="input grow" id="theme" value="Space exploration" aria-label="Theme">
+    <select id="diff" style="width:auto"><option value="easy">Easy clues</option><option value="medium" selected>Medium</option><option value="cryptic">Tricky / punny</option></select>
+    <button class="btn primary" id="make">Make crossword</button>
+    <button class="btn ghost" id="reshuffle" title="Rebuild the grid with the same words">New layout</button>
+  </div>
+  <div class="layout">
+    <section class="card board-card">
+      <div class="row between no-print"><h2 style="margin:0" id="title">—</h2><span class="tag" id="timer">0:00</span></div>
+      <div class="cur-clue no-print" id="curClue"></div>
+      <div id="board" class="board"></div>
+      <div class="row no-print" style="margin-top:12px">
+        <button class="btn sm" id="checkBtn">Check</button><button class="btn sm" id="revealWord">Reveal word</button><button class="btn sm ghost" id="revealAll">Reveal all</button><button class="btn sm ghost" id="clear">Clear</button><button class="btn sm ghost" id="print">Print</button><button class="btn sm ghost" id="share">Copy share link</button><button class="btn sm ghost" id="ipuz">Export .ipuz</button><label class="chk small"><input type="checkbox" id="pencil"> Pencil</label><label class="chk small"><input type="checkbox" id="autocheck"> Autocheck</label>
+        <span class="small muted" id="progress"></span>
+      </div>
+    </section>
+    <section class="card clues-card">
+      <div class="grid cols-2"><div><h3>Across</h3><ol id="across" class="clues"></ol></div><div><h3>Down</h3><ol id="down" class="clues"></ol></div></div>
+      <p class="small muted no-print" id="meta"></p>
+    </section>
+  </div>
+</main>
+</div>
+<div class="page" data-page="build" data-title="Build">
+<main class="grid cols-2">
+  <section class="card stack">
+    <h2 style="margin:0">Your own words</h2>
+    <p class="small muted" style="margin:0">One per line: <code>ANSWER: clue</code>, <code>answer - clue</code>, or just the word. Missing clues can be written by the model.</p>
+    <label>Title<input class="input" id="bTitle" value="Class review"></label>
+    <textarea id="bWords" class="mono" rows="14" spellcheck="false" aria-label="Word list">Photosynthesis: How plants turn light into sugar
+Chlorophyll: Green pigment in leaves
+Stomata: Leaf pores for gas exchange
+Xylem: Tissue that carries water up the stem
+Phloem: Tissue that carries sugars around the plant
+Glucose
+Carbon dioxide: Gas plants absorb
+Oxygen: Gas plants release
+Root: Anchors the plant
+Pollen: Carried by bees between flowers</textarea>
+    <div id="bErrors" class="small" style="color:var(--bad)"></div>
+    <div class="row"><button class="btn" id="bClues">Write missing clues</button><button class="btn primary" id="bBuild">Build crossword</button><button class="btn ghost" id="bSearch">Make word search</button></div>
+  </section>
+  <section class="card stack">
+    <h2 style="margin:0">Layout preview</h2>
+    <div id="bPreview" class="mini-board"></div>
+    <p class="small muted" id="bInfo"></p>
+  </section>
+</main>
+</div>
+
+<div class="page" data-page="wordsearch" data-title="Word search">
+<main class="layout">
+  <section class="card">
+    <div class="row between no-print"><h2 style="margin:0" id="wsTitle">Word search</h2><div class="row"><select id="wsSize" style="width:auto" aria-label="Grid size"><option>10</option><option selected>12</option><option>15</option></select><label class="chk small"><input type="checkbox" id="wsBack"> Backwards words</label><button class="btn sm" id="wsNew">New grid</button><button class="btn sm ghost" id="wsPrint">Print</button></div></div>
+    <div id="wsGrid" class="ws-grid" aria-label="Word search grid"></div>
+    <p class="small muted no-print">Drag across letters to mark a word.</p>
+  </section>
+  <section class="card"><h3>Find these</h3><ul id="wsWords" class="ws-words"></ul><p class="small muted" id="wsStatus"></p></section>
+</main>
+</div>
+
+<div class="page" data-page="archive" data-title="Archive">
+<main class="stack">
+  <div class="kpis" id="arKpis"></div>
+  <div class="card table-wrap"><table id="arTable"></table></div>
+</main>
+</div>
+
+<div class="page" data-page="settings" data-title="Settings"></div>
+<script src="src/lib/dom.js"></script>
+<script src="src/lib/ai.js"></script>
+<script src="src/lib/router.js"></script>
+<script src="src/core.js"></script>
+<script src="src/demo.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
