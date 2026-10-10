@@ -3,98 +3,81 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Crossword AI</title>
-<meta name="description" content="Pick any theme: AI writes the words and clues, a backtracking constructor builds the grid, and you solve it in the browser.">
-<meta name="app-repo" content="https://github.com/dguywhoknows/crossword-generator">
-<meta name="app-version" content="2.0.0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230369a1'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='13' fill='white'%3ECA%3C/text%3E%3C/svg%3E">
+<title>Crossword AI: A fresh crossword on any topic, in seconds</title>
+<meta name="description" content="AI writes the answers and clues, a constructor interlocks the grid, and you solve it right here or share it.">
+<meta property="og:title" content="Crossword AI">
+<meta property="og:description" content="AI writes the answers and clues, a constructor interlocks the grid, and you solve it right here or share it.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230369a1'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='Arial,Helvetica,sans-serif' font-weight='700' font-size='13' fill='white'%3ECA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/base.css">
-<link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="styles/landing.css">
+<style>:root { --accent: #0369a1; }</style>
 </head>
-<body>
-<header class="topbar">
-  <div class="brand"><span class="logo" aria-hidden="true">CA</span><div><h1>Crossword AI</h1><p>Any theme, a fresh playable crossword.</p></div></div>
-  <nav class="topnav" data-nav aria-label="Pages"></nav>
-  <div class="top-actions"><a class="btn ghost sm" href="https://github.com/dguywhoknows/crossword-generator" target="_blank" rel="noopener">GitHub</a><span data-ai-badge></span></div>
+<body class="landing">
+<header class="l-nav">
+  <a class="l-brand" href="#top"><span class="logo">CA</span><b>Crossword AI</b></a>
+  <nav aria-label="Sections"><a href="#demo">Demo</a><a href="#ask">Ask it</a><a href="#features">Features</a><a href="#faq">FAQ</a></nav>
+  <div class="l-nav-cta"><a class="btn primary" href="app.html">Open the app</a></div>
 </header>
-<div class="page active" data-page="puzzle" data-title="Puzzle">
-<main class="stack">
-  <div class="card row no-print">
-    <input class="input grow" id="theme" value="Space exploration" aria-label="Theme">
-    <select id="diff" style="width:auto"><option value="easy">Easy clues</option><option value="medium" selected>Medium</option><option value="cryptic">Tricky / punny</option></select>
-    <button class="btn primary" id="make">Make crossword</button>
-    <button class="btn ghost" id="reshuffle" title="Rebuild the grid with the same words">New layout</button>
-  </div>
-  <div class="layout">
-    <section class="card board-card">
-      <div class="row between no-print"><h2 style="margin:0" id="title">—</h2><span class="tag" id="timer">0:00</span></div>
-      <div class="cur-clue no-print" id="curClue"></div>
-      <div id="board" class="board"></div>
-      <div class="row no-print" style="margin-top:12px">
-        <button class="btn sm" id="checkBtn">Check</button><button class="btn sm" id="revealWord">Reveal word</button><button class="btn sm ghost" id="revealAll">Reveal all</button><button class="btn sm ghost" id="clear">Clear</button><button class="btn sm ghost" id="print">Print</button><button class="btn sm ghost" id="share">Copy share link</button><button class="btn sm ghost" id="ipuz">Export .ipuz</button><label class="chk small"><input type="checkbox" id="pencil"> Pencil</label><label class="chk small"><input type="checkbox" id="autocheck"> Autocheck</label>
-        <span class="small muted" id="progress"></span>
-      </div>
-    </section>
-    <section class="card clues-card">
-      <div class="grid cols-2"><div><h3>Across</h3><ol id="across" class="clues"></ol></div><div><h3>Down</h3><ol id="down" class="clues"></ol></div></div>
-      <p class="small muted no-print" id="meta"></p>
-    </section>
-  </div>
-</main>
-</div>
-<div class="page" data-page="build" data-title="Build">
-<main class="grid cols-2">
-  <section class="card stack">
-    <h2 style="margin:0">Your own words</h2>
-    <p class="small muted" style="margin:0">One per line: <code>ANSWER: clue</code>, <code>answer - clue</code>, or just the word. Missing clues can be written by the model.</p>
-    <label>Title<input class="input" id="bTitle" value="Class review"></label>
-    <textarea id="bWords" class="mono" rows="14" spellcheck="false" aria-label="Word list">Photosynthesis: How plants turn light into sugar
-Chlorophyll: Green pigment in leaves
-Stomata: Leaf pores for gas exchange
-Xylem: Tissue that carries water up the stem
-Phloem: Tissue that carries sugars around the plant
-Glucose
-Carbon dioxide: Gas plants absorb
-Oxygen: Gas plants release
-Root: Anchors the plant
-Pollen: Carried by bees between flowers</textarea>
-    <div id="bErrors" class="small" style="color:var(--bad)"></div>
-    <div class="row"><button class="btn" id="bClues">Write missing clues</button><button class="btn primary" id="bBuild">Build crossword</button><button class="btn ghost" id="bSearch">Make word search</button></div>
-  </section>
-  <section class="card stack">
-    <h2 style="margin:0">Layout preview</h2>
-    <div id="bPreview" class="mini-board"></div>
-    <p class="small muted" id="bInfo"></p>
-  </section>
-</main>
-</div>
 
-<div class="page" data-page="wordsearch" data-title="Word search">
-<main class="layout">
-  <section class="card">
-    <div class="row between no-print"><h2 style="margin:0" id="wsTitle">Word search</h2><div class="row"><select id="wsSize" style="width:auto" aria-label="Grid size"><option>10</option><option selected>12</option><option>15</option></select><label class="chk small"><input type="checkbox" id="wsBack"> Backwards words</label><button class="btn sm" id="wsNew">New grid</button><button class="btn sm ghost" id="wsPrint">Print</button></div></div>
-    <div id="wsGrid" class="ws-grid" aria-label="Word search grid"></div>
-    <p class="small muted no-print">Drag across letters to mark a word.</p>
+<main id="top">
+  <section class="l-hero">
+    <p class="l-kicker">Free · runs in your browser · AI built in</p>
+    <h1>A fresh crossword on any topic, in seconds.</h1>
+    <p class="l-sub">AI writes the answers and clues, a constructor interlocks the grid, and you solve it right here or share it.</p>
+    <div class="l-actions"><a class="btn primary big" href="app.html">Open the app</a><a class="btn big" href="#demo">See it working</a></div>
   </section>
-  <section class="card"><h3>Find these</h3><ul id="wsWords" class="ws-words"></ul><p class="small muted" id="wsStatus"></p></section>
-</main>
-</div>
 
-<div class="page" data-page="archive" data-title="Archive">
-<main class="stack">
-  <div class="kpis" id="arKpis"></div>
-  <div class="card table-wrap"><table id="arTable"></table></div>
-</main>
-</div>
+  <section class="l-demo reveal" id="demo">
+    <div class="l-window"><div class="l-window-bar"><i></i><i></i><i></i><span>Crossword AI</span></div>
+      <iframe src="app.html?embed=1" title="Crossword AI live demo" loading="lazy"></iframe></div>
+    <p class="l-caption">This is the real app running below, not a recording. Try it.</p>
+  </section>
 
-<div class="page" data-page="settings" data-title="Settings"></div>
-<script src="src/lib/dom.js"></script>
-<script src="src/lib/ai.js"></script>
-<script src="src/lib/router.js"></script>
-<script src="src/core.js"></script>
-<script src="src/demo.js"></script>
-<script src="src/app.js"></script>
+  <section class="l-section reveal" id="ask">
+    <div class="l-head"><p class="l-kicker">Just say what you want</p><h2>Tell it in plain words. It uses its own tools to do it.</h2>
+      <p>Open the AI box in the app, type a request, and the AI drives the app's real features for you: it sets things up, edits, runs and reports back. Standing instructions let you shape every AI feature to how you like to work.</p></div>
+    <div class="l-prompts"><div class="l-prompt"><div class="say">A crossword about 90s video games, tricky clues</div><div class="does">Writes the words and builds the grid.</div></div><div class="l-prompt"><div class="say">Turn my vocabulary list into a word search</div><div class="does">Makes a word search from the Build page words.</div></div><div class="l-prompt"><div class="say">Give me a hint for 3 down</div><div class="does">Reveals one letter of that answer.</div></div></div>
+  </section>
+
+  <section class="l-section reveal" id="features">
+    <div class="l-head"><p class="l-kicker">What it does</p><h2>Everything in one place</h2></div>
+    <div class="l-grid"><div class="l-card"><h3>AI-written themed answers</h3><p>AI-written themed answers + clues in three styles (easy, NYT-Tuesday, punny/tricky)</p></div><div class="l-card"><h3>Grid constructor</h3><p>Multi-attempt search, crossing validation, adjacency rules, area/squareness scoring</p></div><div class="l-card"><h3>Standard numbering</h3><p>Standard numbering, across/down clue lists with completion strike-through</p></div><div class="l-card"><h3>Full keyboard solving</h3><p>Arrows, Tab/Shift+Tab, Space to flip direction, smart Backspace</p></div><div class="l-card"><h3>Check</h3><p>Check, reveal word, reveal all, clear, solve timer with completion detection</p></div><div class="l-card"><h3>New layout</h3><p>New layout from the same words; print-friendly stylesheet (blank grid + clues)</p></div><div class="l-card"><h3>Build page</h3><p>Paste your own word list (ANSWER: clue, answer - clue, or bare words) with validation, a live layout preview, and model-written clues for any words missing one</p></div><div class="l-card"><h3>Word search page</h3><p>The same words hidden horizontally, vertically, diagonally and optionally backwards; drag across letters to mark them; printable</p></div><div class="l-card"><h3>Share links encode the title</h3><p>Share links encode the title, layout seed and entries, so a friend gets the identical grid with nothing stored on a server</p></div></div>
+  </section>
+
+  <section class="l-section reveal">
+    <div class="l-head"><p class="l-kicker">How it works</p><h2>Real engines where it counts, AI where it helps</h2></div>
+    <div class="l-steps">
+      <div><span>1</span><h3>Open the app</h3><p>No sign-up needed right now. Everything runs in your browser.</p></div>
+      <div><span>2</span><h3>Ask in your own words</h3><p>Type or click. The AI handles themed answer/clue generation with style control (JSON), sanitized locally.</p></div>
+      <div><span>3</span><h3>Keep what you make</h3><p>Your work is saved in your browser and can be exported any time.</p></div>
+    </div>
+    <p class="l-note">Computed locally, with no AI involved: grid construction, numbering, solving UI, checking, timing, printing.</p>
+  </section>
+
+  <section class="l-section reveal" id="faq">
+    <div class="l-head"><p class="l-kicker">Questions</p><h2>Good to know</h2></div>
+    <div class="l-faq">
+      <details><summary>Is it free?</summary><p>Yes. Every feature is free. </p></details>
+      <details><summary>Where is my data stored?</summary><p>What you create stays in this browser on this device. You can export a backup or delete everything from Settings.</p></details>
+      <details><summary>Do I need an API key?</summary><p>Not to try it: the app runs in demo mode with sample AI output. For live AI, connect a free Groq or OpenRouter key in Settings.</p></details>
+      <details><summary>What can I type into the AI box?</summary><p>Anything you would ask a helpful colleague who knows the app, such as: "A crossword about 90s video games, tricky clues". It plans the steps, runs the app's own functions and tells you what it did. The Instructions tab saves preferences every AI feature follows.</p></details>
+      <details><summary>Can I see the code?</summary><p>Yes. It is open source under the MIT license on <a href="https://github.com/dguywhoknows/crossword-generator" rel="noopener">GitHub</a>, with a <a href="tests/">public test suite</a>.</p></details>
+    </div>
+  </section>
+
+  <section class="l-final reveal">
+    <h2>A fresh crossword on any topic, in seconds.</h2>
+    <a class="btn primary big" href="app.html">Open the app</a>
+  </section>
+</main>
+
+<footer class="l-foot"><span>Crossword AI</span><span><a href="https://github.com/dguywhoknows/crossword-generator" rel="noopener">Source</a> · <a href="tests/">Tests</a> · MIT license</span></footer>
+<script>
+document.querySelectorAll('.reveal').forEach((el) => el.classList.add('pre'));
+const io = new IntersectionObserver((es) => es.forEach((x) => { if (x.isIntersecting) { x.target.classList.remove('pre'); io.unobserve(x.target); } }), { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
 </body>
 </html>

@@ -228,3 +228,21 @@ if (shared) {
   try { const d = decodeShare(shared); entries = d.entries; title = d.title; layout(d.seed); toast('Shared puzzle loaded'); }
   catch { toast('That puzzle link is broken', 'err'); make().catch((e) => toast(e.message, 'err')); }
 } else make().catch((e) => toast(e.message, 'err'));
+
+/* ================= AI command box ================= */
+const findWord = (ref) => { const m = String(ref).match(/(\d+)\s*-?\s*(a|across|d|down)/i); if (!m) throw new Error('Say which clue, like "3 down"'); const w = puzzle.words.find((x) => x.num === +m[1] && x.d === m[2][0].toUpperCase()); if (!w) throw new Error(`No ${m[1]} ${m[2]}`); return w; };
+Copilot.register({
+  context: () => `Puzzle "${title}" ${puzzle ? `${puzzle.W}x${puzzle.H}, clues: ${puzzle.words.map((w) => `${w.num}${w.d} (${w.answer.length}) ${w.clue}`).join('; ')}` : 'none'}. Filled: ${$('#progress').textContent}. Build page word list: ${$('#bWords').value.split('\n').filter(Boolean).length} lines.`,
+  actions: [
+    { name: 'make_crossword', description: 'Write words and clues for a theme and build a new crossword', params: { theme: 'theme', difficulty: [...$('#diff').options].map((o) => o.value).join(' | ') },
+      run: async ({ theme, difficulty }) => { $('#theme').value = theme; if (difficulty) $('#diff').value = difficulty; Router.go('puzzle'); await make(); return `Built "${title}" with ${puzzle.words.length} words`; } },
+    { name: 'build_from_words', description: 'Put your own word list on the Build page and make a crossword or a word search from it', params: { title: 'title', words: 'array of {answer, clue}; clue optional', as: 'crossword | wordsearch' },
+      run: ({ title: t, words, as }) => { if (t) $('#bTitle').value = t; if (words) $('#bWords').value = (Array.isArray(words) ? words : String(words).split(/[\n,]/)).map((w) => (typeof w === 'string' ? w.trim() : `${w.answer}: ${w.clue || ''}`)).filter(Boolean).join('\n'); const r = readBuild(); if (r.entries.length < 2) throw new Error('Need at least two words'); if (as === 'wordsearch') { wsWords = r.entries.map((x) => x.answer); wsTitle = $('#bTitle').value; Router.go('wordsearch'); newSearch(); return `Word search with ${ws.placements.length} words`; } $('#bBuild').click(); return `Crossword with ${puzzle.words.length} words`; } },
+    { name: 'write_clues', description: 'Write clues for Build-page words that have none', params: {}, run: async () => { Router.go('build'); await $('#bClues').onclick({ currentTarget: $('#bClues') }); return 'Clues written'; } },
+    { name: 'hint', description: 'Reveal one letter of a clue\'s answer (the first empty or wrong square)', params: { clue: 'like "3 down" or "12 across"' },
+      run: ({ clue }) => { const w = findWord(clue), cs = cellsOf(w).map(([y, x]) => cellAt(y, x)), c = cs.find((k) => k.val !== k.ch); if (!c) return 'That answer is already complete'; revealCells([c]); progress(); return `Revealed "${c.ch}" in ${w.num} ${w.d === 'A' ? 'across' : 'down'} (letter ${cs.indexOf(c) + 1} of ${cs.length})`; } },
+    { name: 'reveal_answer', description: 'Reveal a whole answer', params: { clue: 'like "3 down"' }, run: ({ clue }) => { const w = findWord(clue); revealCells(cellsOf(w).map(([y, x]) => cellAt(y, x))); progress(); return `${w.num} ${w.d === 'A' ? 'across' : 'down'} is ${w.answer}`; } },
+    { name: 'check_grid', description: 'Mark wrong letters in the grid', params: {}, run: () => { $('#checkBtn').click(); return `${puzzle.cells.flat().filter((c) => c && c.val && c.val !== c.ch).length} wrong letters`; } },
+    { name: 'reshuffle', description: 'Lay the same words out again in a different grid', params: {}, run: () => { $('#reshuffle').click(); return `New layout: ${puzzle.W}x${puzzle.H}`; } },
+  ],
+});
