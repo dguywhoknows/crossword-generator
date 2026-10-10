@@ -1,4 +1,4 @@
-/* core.js — crossword construction and numbering, grid validation, word lists, share codes, ipuz export and word-search generation (pure, unit-tested). */
+/* Crossword construction and numbering, grid validation, word lists, share codes, ipuz export and word-search generation (pure, unit-tested). */
 
 function seededRng(seed) {
   var a = seed >>> 0;

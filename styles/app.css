@@ -1,4 +1,4 @@
-:root { --accent: #0369a1; --cell: 38px; }
+:root { --accent: #3a62a0; --cell: 38px; }
 .layout { display: grid; margin: 0 auto; padding: 24px; max-width: 1200px; grid-template-columns: auto minmax(280px, 1fr); gap: 16px; align-items: start; }
 .board { display: grid; gap: 0; margin-top: 12px; user-select: none; width: max-content; max-width: 100%; overflow: auto; border: 2px solid #111; background: #111; }
 .cell { width: var(--cell); height: var(--cell); position: relative; border: 1px solid #9aa0aa; background: #fff; }
